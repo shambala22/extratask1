@@ -73,6 +73,9 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (savedInstanceState!=null) {
+            first = savedInstanceState.getBoolean("first", true);
+        }
         mSwipeRefreshLayout = (CustomSwipeRefresh) findViewById(R.id.refresh);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setMax(60);
