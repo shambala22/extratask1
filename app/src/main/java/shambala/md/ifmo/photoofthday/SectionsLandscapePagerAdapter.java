@@ -4,16 +4,14 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import java.util.Locale;
-
 /**
  * Created by 107476 on 12.01.2015.
  */
-public class SectionsPagerAdapter extends FragmentPagerAdapter {
+public class SectionsLandscapePagerAdapter extends FragmentPagerAdapter {
 
 
 
-    public SectionsPagerAdapter(FragmentManager fm) {
+    public SectionsLandscapePagerAdapter(FragmentManager fm) {
         super(fm);
     }
 
@@ -27,8 +25,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        // Show 10 total pages.
-        return 10;
+        // Show 6 total pages.
+        return 6;
     }
-
 }

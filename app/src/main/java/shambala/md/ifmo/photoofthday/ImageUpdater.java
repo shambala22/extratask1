@@ -28,6 +28,7 @@ import java.util.ArrayList;
  */
 public class ImageUpdater extends IntentService {
     public static final String url = "http://api-fotki.yandex.ru/api/podhistory/?format=json";
+    public  static final String size = "M";
     public ImageUpdater() {
         super("ImageUpdater");
     }
@@ -53,15 +54,15 @@ public class ImageUpdater extends IntentService {
             JSONObject entry;
             String link;
             URL url;
-            Bitmap image;
-            for (int i = 0; i < entries.length(); i++) {
+
+            for (int i = 0; i < 60; i++) {
                 Bundle bundle = new Bundle();
                 bundle.putInt("progress", i+1);
                 receiver.send(ImagesReceiver.PROGRESS, bundle);
                 entry = entries.getJSONObject(i);
-                link = entry.getJSONObject("img").getJSONObject("M").getString("href");
+                link = entry.getJSONObject("img").getJSONObject(size).getString("href");
                 url = new URL(link);
-                image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                Bitmap image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
                 MainActivity.downloaded.add(i, image);
                 saveImage(image, i);
 

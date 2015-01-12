@@ -12,6 +12,7 @@ import java.util.Locale;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
@@ -55,7 +56,7 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     SectionsPagerAdapter mSectionsPagerAdapter;
-
+    SectionsLandscapePagerAdapter mSectionsLandscapePagerAdapter;
     /**
      * The {@link ViewPager} that will host the section contents.
      */
@@ -64,6 +65,9 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
     CustomSwipeRefresh mSwipeRefreshLayout;
     private ImagesReceiver mReceiver;
     static ArrayList<Bitmap> downloaded = new ArrayList<>();
+    boolean first = true;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +75,11 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
         setContentView(R.layout.activity_main);
         mSwipeRefreshLayout = (CustomSwipeRefresh) findViewById(R.id.refresh);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        for (int i = 0; i<90; i++) {
-            downloaded.add(loadImage(i));
+        progressBar.setMax(60);
+        if (first) {
+            for (int i = 0; i < 60; i++) {
+                downloaded.add(loadImage(i));
+            }
         }
 
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -84,11 +91,14 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-
+        mSectionsLandscapePagerAdapter = new SectionsLandscapePagerAdapter(getSupportFragmentManager());
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            mViewPager.setAdapter(mSectionsLandscapePagerAdapter);
+        } else {
+            mViewPager.setAdapter(mSectionsPagerAdapter);
+        }
         mReceiver = new ImagesReceiver(new Handler());
         mReceiver.setReceiver(this);
         if (downloaded.isEmpty()) {
@@ -109,6 +119,17 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
 
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("first", false);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        first = savedInstanceState.getBoolean("count");
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -138,7 +159,12 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
         switch (resultCode) {
             case ImagesReceiver.OK:
                 mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-                mViewPager.setAdapter(mSectionsPagerAdapter);
+                mSectionsLandscapePagerAdapter = new SectionsLandscapePagerAdapter(getSupportFragmentManager());
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    mViewPager.setAdapter(mSectionsLandscapePagerAdapter);
+                } else {
+                    mViewPager.setAdapter(mSectionsPagerAdapter);
+                }
                 mSwipeRefreshLayout.setRefreshing(false);
                 progressBar.setProgress(0);
                 break;
@@ -154,15 +180,16 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
 
     }
 
-    Bitmap b;
-    FileInputStream fis;
+
+
 
     public Bitmap loadImage(int id) {
-
+        Bitmap b = null;
         try {
-            fis = this.openFileInput(""+id);
+            FileInputStream fis = this.openFileInput(""+id);
             b = BitmapFactory.decodeStream(fis);
             fis.close();
+
 
         }
         catch (FileNotFoundException e) {
@@ -205,11 +232,13 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
+            fragment.setRetainInstance(true);
             return fragment;
         }
 
         public PlaceholderFragment() {
         }
+
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -218,8 +247,13 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             gridView = (GridView) rootView.findViewById(R.id.gridView);
             if (!((MainActivity) getActivity()).downloaded.isEmpty()) {
-                screen = ((MainActivity) getActivity()).downloaded.subList(6 * (pos-1), 6 + 6 * (pos-1));
-                gridView.setAdapter(new GridAdapter(getActivity(), screen, 6 * (pos-1)));
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    screen = ((MainActivity) getActivity()).downloaded.subList(6 * (pos - 1), 6 + 6 * (pos - 1));
+                    gridView.setAdapter(new GridAdapter(getActivity(), screen, 6 * (pos - 1)));
+                } else {
+                    screen = ((MainActivity) getActivity()).downloaded.subList(10 * (pos - 1), 10 + 10 * (pos - 1));
+                    gridView.setAdapter(new GridAdapter(getActivity(), screen, 10 * (pos - 1)));
+                }
             }
 
             return rootView;
