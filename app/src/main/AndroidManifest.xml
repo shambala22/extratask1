@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="shambala.md.ifmo.photoofthday" >
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.SET_WALLPAPER"/>
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -17,10 +19,6 @@
             </intent-filter>
         </activity>
         <service android:name=".ImageUpdater"
-            android:exported="false"/>
-        <provider
-            android:authorities="ru.ifmo.md.shambala"
-            android:name=".ImagesProvider"
             android:exported="false"/>
         <activity android:name=".OneImage"/>
     </application>

@@ -35,7 +35,6 @@ public class GridAdapter extends ArrayAdapter<Bitmap> {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("clicked", ""+pos);
                 Intent intent = new Intent(getContext(), OneImage.class);
                 intent.putExtra("index", number+position);
                 getContext().startActivity(intent);
