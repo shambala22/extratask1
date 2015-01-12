@@ -116,6 +116,7 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
 
 
     public void update() {
+        Toast.makeText(this, "Please, wait a moment...", Toast.LENGTH_LONG).show();
         Intent intent = new Intent(this, ImageUpdater.class);
         intent.putExtra("receiver", mReceiver);
         startService(intent);
@@ -180,7 +181,6 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
                 break;
 
         }
-
     }
 
 
