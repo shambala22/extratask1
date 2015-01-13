@@ -13,4 +13,9 @@
         app:showAsAction="always"
         android:title="wallpaper"
         android:icon="@drawable/wallpaper"/>
+    <item
+        android:id="@+id/browser"
+        app:showAsAction="ifRoom"
+        android:title="browser"
+        android:icon="@drawable/browser"/>
 </menu>

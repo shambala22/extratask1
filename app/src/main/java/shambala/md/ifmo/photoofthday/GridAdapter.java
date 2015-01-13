@@ -29,6 +29,7 @@ public class GridAdapter extends ArrayAdapter<Bitmap> {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.grid_element, parent, false);
+        final boolean[] updated = new boolean[resource.size()];
         SquareImageView imageView = (SquareImageView) convertView.findViewById(R.id.imageView);
         imageView.setImageBitmap(resource.get(position));
         final int pos = position;
@@ -37,6 +38,8 @@ public class GridAdapter extends ArrayAdapter<Bitmap> {
             public void onClick(View v) {
                 Intent intent = new Intent(getContext(), OneImage.class);
                 intent.putExtra("index", number+position);
+                intent.putExtra("updated", updated[position]);
+                updated[position] = true;
                 getContext().startActivity(intent);
             }
         });

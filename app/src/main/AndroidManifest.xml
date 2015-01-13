@@ -21,6 +21,10 @@
         <service android:name=".ImageUpdater"
             android:exported="false"/>
         <activity android:name=".OneImage"/>
+        <provider
+            android:authorities="shambala.md.ifmo"
+            android:name=".ImagesContentProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>

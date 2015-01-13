@@ -104,10 +104,12 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
         }
         mReceiver = new ImagesReceiver(new Handler());
         mReceiver.setReceiver(this);
-        if (downloaded.isEmpty()) {
-            Intent intent= new Intent(this, ImageUpdater.class);
-            intent.putExtra("receiver", mReceiver);
-            startService(intent);
+        if (first) {
+            if (downloaded.get(0) == null) {
+                Intent intent = new Intent(this, ImageUpdater.class);
+                intent.putExtra("receiver", mReceiver);
+                startService(intent);
+            }
         }
 
 
@@ -174,6 +176,8 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
                 break;
             case ImagesReceiver.ERROR:
                 Toast.makeText(this, "Connection error", Toast.LENGTH_SHORT).show();
+                mSwipeRefreshLayout.setRefreshing(false);
+                progressBar.setProgress(0);
 
                 break;
             case  ImagesReceiver.PROGRESS:

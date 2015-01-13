@@ -5,10 +5,14 @@ import android.app.Activity;
 import android.app.WallpaperManager;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -17,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.io.File;
@@ -29,20 +34,32 @@ import java.util.Calendar;
 /**
  * Created by 107476 on 12.01.2015.
  */
-public class OneImage extends ActionBarActivity {
+public class OneImage extends ActionBarActivity implements ImagesReceiver.Receiver {
     ImageView imageView;
     Bitmap b = null;
+    ProgressBar progressBar;
     int index;
+    boolean first = true;
+    boolean updated;
+    private ImagesReceiver mReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image);
         imageView = (ImageView) findViewById(R.id.imageView2);
+        if (savedInstanceState!=null) {
+            first = savedInstanceState.getBoolean("first", true);
+        }
+        getSupportActionBar().setTitle("");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-
+        updated = getIntent().getBooleanExtra("updated", false);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar2);
+        progressBar.setMax(100);
+        progressBar.setVisibility(View.GONE);
         index = getIntent().getIntExtra("index", 0);
-
+        mReceiver = new ImagesReceiver(new Handler());
+        mReceiver.setReceiver(this);
         try {
             FileInputStream fis = this.openFileInput("" + index);
             b = BitmapFactory.decodeStream(fis);
@@ -53,10 +70,47 @@ public class OneImage extends ActionBarActivity {
         if (b!=null) {
             imageView.setImageBitmap(b);
         }
+        b = null;
+        if (first) {
+            if (updated) {
+                try {
+                    FileInputStream fis = this.openFileInput("" + (100 + index));
+                    b = BitmapFactory.decodeStream(fis);
+                    fis.close();
+
+                } catch (Exception e) {
+                }
+            }
+            if (b!= null) {
+                imageView.setImageBitmap(b);
+            } else {
+                Intent intent = new Intent(this, ImageUpdater.class);
+                intent.putExtra("receiver", mReceiver);
+                intent.putExtra("index", index);
+                progressBar.setVisibility(View.VISIBLE);
+                startService(intent);
+            }
+        } else {
+            try {
+                FileInputStream fis = this.openFileInput("" + (100+index));
+                b = BitmapFactory.decodeStream(fis);
+                fis.close();
+                imageView.setImageBitmap(b);
+            } catch (Exception e) {
+                Toast.makeText(this, "Can't load image", Toast.LENGTH_SHORT).show();
+            }
+        }
 
 
 
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("first", false);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_image, menu);
@@ -102,8 +156,43 @@ public class OneImage extends ActionBarActivity {
                     Toast.makeText(this, "ERROR", Toast.LENGTH_SHORT).show();
                 }
                 return true;
+            case R.id.browser:
+                Cursor cursor = getContentResolver().query(ImagesContentProvider.LINKS_CONTENT_URI, null, "ind = ?", new String[]{""+index}, null);
+                cursor.moveToFirst();
+                String link = cursor.getString(3);
+                cursor.close();
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+                startActivity(browserIntent);
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onReceiveResult(int resultCode, Bundle data) {
+        switch (resultCode) {
+            case ImagesReceiver.OK:
+                try {
+                    FileInputStream fis = this.openFileInput("" + (100+index));
+                    b = BitmapFactory.decodeStream(fis);
+                    fis.close();
+                } catch (Exception e) {
+                    Toast.makeText(this, "Can't load image", Toast.LENGTH_SHORT).show();
+                }
+                progressBar.setProgress(100);
+                progressBar.setVisibility(View.GONE);
+                imageView.setImageBitmap(b);
+                break;
+            case ImagesReceiver.ERROR:
+                Toast.makeText(this, "Connection error", Toast.LENGTH_SHORT).show();
+                progressBar.setProgress(100);
+                progressBar.setVisibility(View.GONE);
+
+                break;
+            case  ImagesReceiver.PROGRESS:
+                progressBar.setProgress(50);
+                break;
+
         }
     }
 }
