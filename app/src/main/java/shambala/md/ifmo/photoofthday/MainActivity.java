@@ -66,6 +66,7 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
     private ImagesReceiver mReceiver;
     static ArrayList<Bitmap> downloaded = new ArrayList<>();
     boolean first = true;
+    static boolean[] updated = new boolean[60];
 
 
 
