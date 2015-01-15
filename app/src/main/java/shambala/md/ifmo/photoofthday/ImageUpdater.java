@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 
 /**
  * Created by 107476 on 10.01.2015.
@@ -75,6 +76,7 @@ public class ImageUpdater extends IntentService {
             String onSiteLink;
             URL url;
             getContentResolver().delete(ImagesContentProvider.LINKS_CONTENT_URI, null ,null);
+            ArrayList<Bitmap> newImages = new ArrayList<>();
             for (int i = 0; i < 60; i++) {
                 Bundle bundle = new Bundle();
                 bundle.putInt("progress", i+1);
@@ -85,7 +87,7 @@ public class ImageUpdater extends IntentService {
                 onSiteLink = entry.getJSONObject("links").getString("alternate");
                 url = new URL(link);
                 Bitmap image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                MainActivity.downloaded.add(i, image);
+                newImages.add(i, image);
                 ContentValues values = new ContentValues();
                 values.put("ind", i);
                 values.put("link", hLink);
@@ -94,6 +96,7 @@ public class ImageUpdater extends IntentService {
                 saveImage(image, i);
 
             }
+            MainActivity.downloaded = newImages;
             receiver.send(ImagesReceiver.OK, Bundle.EMPTY);
         } catch (Exception e) {
             receiver.send(ImagesReceiver.ERROR, Bundle.EMPTY);
