@@ -12,6 +12,7 @@ import java.util.Locale;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
@@ -119,6 +120,11 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
 
 
     public void update() {
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
         Toast.makeText(this, "Please, wait a moment...", Toast.LENGTH_LONG).show();
         Intent intent = new Intent(this, ImageUpdater.class);
         intent.putExtra("receiver", mReceiver);
@@ -174,6 +180,7 @@ public class MainActivity extends ActionBarActivity implements ImagesReceiver.Re
                 }
                 mSwipeRefreshLayout.setRefreshing(false);
                 progressBar.setProgress(0);
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
                 break;
             case ImagesReceiver.ERROR:
                 Toast.makeText(this, "Connection error", Toast.LENGTH_SHORT).show();
