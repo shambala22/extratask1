@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -67,20 +68,24 @@ public class PicturesDownloader extends IntentService {
             String downloadLink;
             String hrLink;
             String pageLink;
+            JSONObject picture;
+            Bitmap bitmap;
 
             for (int i = 0; i < entries.length(); i++) {
-                JSONObject picture = entries.getJSONObject(i);
+                picture = entries.getJSONObject(i);
 
                 downloadLink = picture.getJSONObject("img").getJSONObject(reducedSize).getString("href");
                 hrLink = picture.getJSONObject("img").getJSONObject(fullSize).getString("href");
                 pageLink = picture.getJSONObject("links").getString("alternate");
 
                 URL picUrl = new URL(downloadLink);
-                Bitmap bmp = BitmapFactory.decodeStream(picUrl.openConnection().getInputStream());
+                bitmap = BitmapFactory.decodeStream(picUrl.openConnection().getInputStream());
                 ContentValues cv = new ContentValues();
 
+                bitmap = ThumbnailUtils.extractThumbnail(bitmap, bitmap.getWidth() ,bitmap.getWidth() , ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                bmp.compress(Bitmap.CompressFormat.PNG, 100, bos);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos);
                 byte[] bArray = bos.toByteArray();
 
                 cv.put(DBPictures.COLUMN_PICTURE, bArray);

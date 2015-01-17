@@ -13,6 +13,7 @@ import java.util.ArrayList;
  */
 public class YPicturesListLoader extends AsyncTaskLoader<ArrayList<YPicture>> {
     Context context;
+    Bitmap bmp;
 
     public YPicturesListLoader(Context context) {
         super(context);
@@ -35,7 +36,7 @@ public class YPicturesListLoader extends AsyncTaskLoader<ArrayList<YPicture>> {
             c.moveToFirst();
             while (!c.isBeforeFirst() && !c.isAfterLast()) {
                 byte[] byteArray = c.getBlob(c.getColumnIndex(DBPictures.COLUMN_PICTURE));
-                Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+                bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
                 YPicture img = new YPicture(
                         bmp,
                         c.getString(c.getColumnIndex(DBPictures.COLUMN_PICTURE_HR)),

@@ -39,7 +39,7 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setMax(60);
-        progressBar.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
         gridView = (GridView) findViewById(R.id.gridView);
 
         myBroadcastReceiver = new MyBroadcastReceiver();
@@ -68,8 +68,11 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_refresh) {
-            if (isOnline()) startService(new Intent(this, PicturesDownloader.class));
-                else showMessage("No internet connection");
+            if (isOnline()) {
+                startService(new Intent(this, PicturesDownloader.class));
+                progressBar.setVisibility(View.VISIBLE);
+            }
+            else showMessage("No internet connection");
             return true;
         }
 
