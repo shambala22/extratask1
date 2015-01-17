@@ -1,8 +1,11 @@
 package md.ifmo.ru.pictureoftheday;
 
 import android.app.LoaderManager;
+import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,97 +16,80 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Window;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 
 
-public class PictureViewActivity extends ActionBarActivity implements LoaderManager.LoaderCallbacks<ArrayList<YPicture>> {
-    private static final int PICURES_LOADER_ID = 1;
-    public static final String APP_PREFERENCES_POSITION = "position";
-    SharedPreferences settings;
-    ArrayList<YPicture> list;
-    int position;
-    ViewPager pager;
-    PagerAdapter pagerAdapter;
-
+public class PictureViewActivity extends ActionBarActivity {
+    ImageView imageView;
+    Bitmap bitmap = null;
+    String hrLink;
+    String webLink;
+    WebView webView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        supportRequestWindowFeature(Window.FEATURE_ACTION_BAR);
-        getSupportActionBar().hide();
         setContentView(R.layout.activity_picture_view);
-        pager = (ViewPager) findViewById(R.id.pager);
+        imageView = (ImageView) findViewById(R.id.imageView);
+        Intent intent = getIntent();
+        hrLink = intent.getStringExtra("HR_LINK");
+        webLink = intent.getStringExtra("WEB_LINK");
+        webView = (WebView) findViewById(R.id.webView);
+        webView.setWebViewClient(new AppWebViewClient());
+        webView.loadUrl(hrLink);
+        try {
+            URL url = url = new URL(hrLink);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+            //InputStream inputStream = urlConnection.getInputStream();
+            //bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
 
-        settings = PreferenceManager.getDefaultSharedPreferences(this);
-        if (settings.contains(APP_PREFERENCES_POSITION)) {
-            position = settings.getInt(APP_PREFERENCES_POSITION, 0);
-        } else position = 0;
 
-
-        getLoaderManager().initLoader(PICURES_LOADER_ID, null, this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putInt(APP_PREFERENCES_POSITION, pager.getCurrentItem());
-        editor.apply();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (settings.contains(APP_PREFERENCES_POSITION)) {
-            position = settings.getInt(APP_PREFERENCES_POSITION, 0);
-        } else position = 0;
-        update();
-    }
-
-    private void update() {
-        if (list != null && position >= 0 && position < list.size()) {
-            pagerAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager());
-            pager.setAdapter(pagerAdapter);
-            pager.setCurrentItem(position);
+        } catch (Exception e) {
+            Toast.makeText(this, "Can't Load Picture"+hrLink, Toast.LENGTH_LONG).show();
         }
+        imageView.setImageBitmap(bitmap);
+
+
     }
 
-    public Loader<ArrayList<YPicture>> onCreateLoader(int i, Bundle bundle) {
-        return new YPicturesListLoader(this);
-    }
+    private InputStream getHttpConnection(String urlString)
+            throws IOException {
+        InputStream stream = null;
+        URL url = new URL(urlString);
+        URLConnection connection = url.openConnection();
 
-    @Override
-    public void onLoadFinished(Loader<ArrayList<YPicture>> listLoader, final ArrayList<YPicture> list) {
-        this.list = list;
-        update();
-    }
+        try {
+            HttpURLConnection httpConnection = (HttpURLConnection) connection;
+            httpConnection.setRequestMethod("GET");
+            httpConnection.connect();
 
-    @Override
-    public void onLoaderReset(Loader<ArrayList<YPicture>> listLoader) {
-        new YPicturesListLoader(this);
-    }
-
-    private class MyFragmentPagerAdapter extends FragmentStatePagerAdapter {
-
-        public MyFragmentPagerAdapter(FragmentManager fm) {
-            super(fm);
+            if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                stream = httpConnection.getInputStream();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+        return stream;
+    }
 
+    private class AppWebViewClient extends WebViewClient {
         @Override
-        public Fragment getItem(int position) {
-            return PictureFullscreenFragment.newInstance(
-                    list.get(position).bitmap,
-                    list.get(position).hrLink,
-                    list.get(position).pageLink
-            );
+        public boolean shouldOverrideUrlLoading(WebView view, String url){
+            view.loadUrl(url);
+            return true;
         }
-
-        @Override
-        public int getCount() {
-            return list.size();
-        }
-
     }
 }

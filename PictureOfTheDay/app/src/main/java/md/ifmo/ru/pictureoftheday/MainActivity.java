@@ -95,10 +95,9 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
-                editor.putInt(PictureViewActivity.APP_PREFERENCES_POSITION, position);
-                editor.apply();
                 Intent intent = new Intent(MainActivity.this, PictureViewActivity.class);
+                intent.putExtra("HR_LINK",list.get(position).hrLink);
+                intent.putExtra("WEB_LINK",list.get(position).pageLink);
                 startActivity(intent);
             }
         });
